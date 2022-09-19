@@ -9,8 +9,8 @@ class DataMod:
     Mod16LSB = 8
 
 
-def data_merge(h_byte, l_byte):
-    return h_byte << 8 | l_byte
+def data_merge(h_byte, l_byte, msb=True):
+    return h_byte << 8 | l_byte if msb else l_byte << 8 | h_byte
 
 
 class CamMod:
@@ -41,7 +41,7 @@ class CamMod:
         self.__init_data_map()
 
     def get_serial(self):
-        self.serial = self.filepath.left(self.serial_cnt)
+        self.serial = self.filepath.split("\\")[-1][0:self.serial_cnt]
         return self.serial
 
     def __get_data(self, begin, end, mode=DataMod.ModSingle):
@@ -69,6 +69,7 @@ class CamMod:
 
     def get_awb_data(self, awb_addr_bg, awb_addr_end, mode=1, base=512):
         awb_res_arr = self.__get_data(awb_addr_bg, awb_addr_end, 0)
+        self.get_serial()
         if mode == DataMod.ModSingle:
 
             self.awb_r = awb_res_arr[0]
@@ -93,10 +94,37 @@ class CamMod:
         self.af_mac = af_res_arr[1]
         return af_res_arr
 
-    def get_lsc_data(self, lsc_bg, ls_end, mode=1):
+    def get_lsc_data(self, lsc_bg, ls_end, mode=1, with_serial=0):
         lsc_res_arr = self.__get_data(lsc_bg, ls_end, 1)
+        lsc_r = []
+        lsc_gr = []
+        lsc_gb = []
+        lsc_b = []
+
         for i in range(0, len(lsc_res_arr), 4):
-            self.quan_lsc_r.append(lsc_res_arr[i])
-            self.quan_lsc_gr.append(lsc_res_arr[i + 1])
-            self.quan_lsc_gb.append(lsc_res_arr[i + 2])
-            self.quan_lsc_b.append(lsc_res_arr[i + 3])
+            lsc_r.append(lsc_res_arr[i])
+            lsc_gr.append(lsc_res_arr[i + 1])
+            lsc_gb.append(lsc_res_arr[i + 2])
+            lsc_b.append(lsc_res_arr[i + 3])
+
+        if with_serial:
+            self.get_serial()
+            lsc_r.insert(0, self.serial)
+            lsc_gr.insert(0, self.serial)
+            lsc_gb.insert(0, self.serial)
+            lsc_b.insert(0, self.serial)
+
+        return lsc_r, lsc_gr, lsc_gb, lsc_b
+
+    def data_clear(self):
+        self.serial = ''
+        self.data_map.clear()
+        self.awb_r = 0
+        self.awb_gr = 0
+        self.awb_gb = 0
+        self.awb_b = 0
+        self.awb_r2g = 0
+        self.awb_b2g = 0
+        self.awb_gb2gr = 0
+        self.af_inf = 0
+        self.af_mac = 0
