@@ -109,10 +109,11 @@ class CamMod:
 
         if with_serial:
             self.get_serial()
-            lsc_r.insert(0, self.serial)
-            lsc_gr.insert(0, self.serial)
-            lsc_gb.insert(0, self.serial)
-            lsc_b.insert(0, self.serial)
+            serial_tmp = "#" + self.serial
+            lsc_r.insert(0, serial_tmp)
+            lsc_gr.insert(0, serial_tmp)
+            lsc_gb.insert(0, serial_tmp)
+            lsc_b.insert(0, serial_tmp)
 
         return lsc_r, lsc_gr, lsc_gb, lsc_b
 

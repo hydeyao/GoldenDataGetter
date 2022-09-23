@@ -3,14 +3,11 @@ import argparse
 from configparser import ConfigParser
 import os
 import csv
+import win32api
 
 
 def _args_parse():
     parser = argparse.ArgumentParser(description="A python csv script")
-    parser.add_argument('-d', '--dir', action='store', dest='directory', required=False, default="./",
-                        help='source directory')
-    parser.add_argument('-o', '--out', action='store', dest='out_file', required=False, default="result.csv",
-                        help='output file path')
     parser.add_argument('-a', '--AF', action='store_true', dest='AF', required=False, default=False,
                         help='collect AF data')
     return parser.parse_args()
@@ -22,6 +19,9 @@ def _parse_config(af_need):
     file_path = os.path.join(os.path.abspath('.'), 'config.ini')
     assert os.path.exists(file_path)
     conf.read(file_path)
+
+    config_map["src_dir"] = conf.get("File", "SourceDataDir")
+    config_map["dst_file"] = conf.get("File", "outPutDir")
 
     config_map["SerialCount"] = int(conf.get("File", "SerialCount"))
     config_map["AddrEnd"] = int(conf.get("File", "AddrEnd"), 16)
@@ -55,7 +55,7 @@ def _handle_files(config_map, af_need=0):
     cam_obj = None
     awb_header = ["Serial", "AWB_R", "AWB_GR", "AWB_GB", "AWB_G"]
     lsc_header = []
-    for i in range(1, 222):
+    for i in range(0, 221):
         lsc_header.append("B" + str(i))
     lsc_header.insert(0, "Serial")
 
@@ -105,7 +105,5 @@ def _handle_files(config_map, af_need=0):
 if __name__ == '__main__':
     ag_pars = _args_parse()
     mod_configs = _parse_config(ag_pars.AF)
-    mod_configs["src_dir"] = ag_pars.directory
-    mod_configs["dst_file"] = ag_pars.out_file
-
     _handle_files(mod_configs)
+    win32api.MessageBox(0, " lsc data get done", "OK")
